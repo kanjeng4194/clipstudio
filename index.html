@@ -776,6 +776,24 @@
       a.href=CS_API+res.file+"?k="+encodeURIComponent(csStoredKey());
       a.setAttribute("download","");
       a.textContent="⬇ Unduh MP4 Hasil Render";
+      a.addEventListener("click",function(ev){
+        // Cross-origin `download` is ignored by browsers (it would just
+        // navigate to the player). Fetch as blob instead so the tap
+        // really saves the file.
+        ev.preventDefault();
+        var oldT=a.textContent;a.textContent="⏳ Mengunduh…";
+        fetch(a.href,{headers:{"X-CS-Key":csStoredKey()}}).then(function(r){
+          if(!r.ok)throw new Error("HTTP "+r.status);
+          return r.blob();
+        }).then(function(blob){
+          var u=URL.createObjectURL(blob);
+          var tmp=document.createElement("a");
+          tmp.href=u;tmp.download="clip-render.mp4";
+          document.body.appendChild(tmp);tmp.click();tmp.remove();
+          setTimeout(function(){URL.revokeObjectURL(u)},4000);
+          a.textContent=oldT;
+        }).catch(function(e){a.textContent=oldT;toast("Unduh gagal: "+e.message)});
+      });
       box.appendChild(a);
       toast("Render selesai — klik tombol unduh MP4");
     }).catch(function(e){toast("Render gagal: "+e.message)})
