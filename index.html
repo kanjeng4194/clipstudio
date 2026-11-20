@@ -99,6 +99,8 @@
   .lane.clickable{cursor:pointer}
   .trim-region{position:absolute;top:0;bottom:0;background:rgba(255,79,154,.30);border-left:2px solid var(--pink);border-right:2px solid var(--pink);display:none}
   .playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--pink);left:0}
+  .scene-tick{position:absolute;top:0;bottom:0;width:2px;background:var(--mint);opacity:.85;pointer-events:none}
+  .scene-chip{font-size:12px;padding:6px 10px}
   .cap{position:absolute;top:4px;height:22px;border-radius:4px;background:#472a6e;border:1px solid var(--violet);color:#e9ddff;font-size:10.5px;display:flex;align-items:center;padding:0 7px;white-space:nowrap;overflow:hidden;max-width:34%}
   .wave{position:absolute;inset:0;display:flex;align-items:center;gap:1.5px;padding:0 3px}
   .wave i{flex:1;background:rgba(79,232,192,.65);border-radius:1px;min-height:2px}
@@ -194,6 +196,20 @@
 
     <!-- RIGHT COLUMN -->
     <div class="col">
+      <div class="panel" id="panel-server">
+        <div class="p-head mono"><span>SERVER / BACKEND</span><span class="r">CLIP.ALWANTRA.XYZ</span></div>
+        <div style="display:grid;gap:8px">
+          <div class="mono" id="srv-status" style="font-size:12.5px;color:var(--mint)">Backend: memeriksa…</div>
+          <input type="text" id="srv-url" placeholder="Tempel URL YouTube / Twitch / MP4…">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn pink" id="btn-fetch-url">Ambil dari URL (yt-dlp)</button>
+            <button class="btn" id="btn-upload-server">Upload File ke Server</button>
+            <button class="btn" id="btn-cs-key">Kode Akses</button>
+          </div>
+          <p style="color:var(--dim);font-size:12px;line-height:1.45">Video dari server membuka fitur Transkrip Otomatis, Deteksi Scene, dan Render MP4 Presisi. Video lokal tetap jalan seperti biasa.</p>
+        </div>
+      </div>
+
       <div class="panel">
         <div class="p-head mono"><span>MEDIA BIN / SOURCE MOMENTS</span><span class="r">KLIK = MUAT</span></div>
         <div class="bin" id="bin"><div class="bin-empty">Belum ada video. Tambah dari tombol “+ Tambah Video”.</div></div>
@@ -232,6 +248,7 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn pink" id="btn-add-cap">+ Tambah di <span class="mono" id="cap-at">00:00</span></button>
             <button class="btn" id="btn-srt">⬇ Download .SRT</button>
+            <button class="btn mint" id="btn-transcribe">🤖 Transkrip Otomatis (Server)</button>
           </div>
         </div>
         <div class="cap-list" id="cap-list"><div style="color:var(--dim);font-size:13px">Belum ada caption. Putar video, berhenti di momennya, tulis, tambah.</div></div>
@@ -241,6 +258,8 @@
         <div class="p-head mono"><span>EXPORT / SHIP IT</span><span class="r">H.264 / WEBM</span></div>
         <div class="exp-grid">
           <button class="btn pink" id="btn-export-webm">⬇ Export Potongan (WebM, realtime)</button>
+          <button class="btn mint" id="btn-render-server">🖥️ Render MP4 di Server (Presisi)</button>
+          <div id="server-render-out"></div>
           <button class="btn" id="btn-ffmpeg">Buat Perintah FFmpeg (MP4 presisi)</button>
           <textarea id="ffmpeg-out" readonly placeholder="Perintah FFmpeg muncul di sini — jalankan di Clip Studio server untuk hasil MP4 presisi dari file aslimu." style="display:none"></textarea>
           <button class="btn" id="btn-copy-ffmpeg" style="display:none">📋 Salin Perintah</button>
@@ -267,6 +286,11 @@
       <div class="lane clickable" id="lane-audio"><div class="wave" id="wave"></div><div class="playhead" id="playhead3"></div></div>
     </div>
     <div class="ruler mono" style="margin-left:74px"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">
+      <button class="btn mint" id="btn-scenes">🎬 Deteksi Scene (Server)</button>
+      <span class="mono" id="scene-info" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+    <div id="scene-list" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
   </div>
 
   <!-- TOOLKIT -->
@@ -314,7 +338,7 @@
   "use strict";
   var $=function(id){return document.getElementById(id)};
   var video=$("program"), seek=$("seek"), toastEl=$("toast");
-  var state={dur:0,inT:null,outT:null,cropX:55,safe:false,cropov:true,loopSeg:false,recording:false,captions:[],srcName:"",srcUrl:""};
+  var state={dur:0,inT:null,outT:null,cropX:55,safe:false,cropov:true,loopSeg:false,recording:false,captions:[],srcName:"",srcUrl:"",serverSourceId:null};
   var toastTimer=null;
   function toast(msg){toastEl.textContent=msg;toastEl.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){toastEl.classList.remove("show")},2600)}
   function fmt(t){if(!isFinite(t)||t===null||t===undefined)return"--:--";t=Math.max(0,t);var h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60);function p(n){return(n<10?"0":"")+n}return (h>0?p(h)+":":"")+p(m)+":"+p(s)}
@@ -339,7 +363,7 @@
   });
   function addSource(file){
     var url=URL.createObjectURL(file);
-    var src={name:file.name,url:url};
+    var src={name:file.name,url:url,file:file};
     sources.push(src);renderBin();
     loadSource(src);
     toast("Video dimuat: "+file.name);
@@ -348,7 +372,7 @@
     bin.innerHTML="";
     sources.forEach(function(src,idx){
       var d=document.createElement("div");d.className="bin-item"+(state.srcUrl===src.url?" sel":"");
-      var v=document.createElement("video");v.src=src.url;v.muted=true;v.preload="metadata";v.playsInline=true;
+      var v=document.createElement("video");if(src.serverId)v.crossOrigin="anonymous";v.src=src.url;v.muted=true;v.preload="metadata";v.playsInline=true;
       var s=document.createElement("small");s.className="mono";s.textContent=src.name.slice(0,18);
       v.addEventListener("loadedmetadata",function(){s.textContent=fmt(v.duration)+" · "+src.name.slice(0,14)});
       d.appendChild(v);d.appendChild(s);
@@ -359,11 +383,15 @@
   }
   function loadSource(src){
     state.srcUrl=src.url;state.srcName=src.name;
+    state.serverSourceId=src.serverId||null;
+    if(src.serverId)video.crossOrigin="anonymous";else video.removeAttribute("crossorigin");
     state.inT=null;state.outT=null;state.captions=[];state.loopSeg=false;
     video.src=src.url;video.load();
     $("src-name").textContent=src.name.toUpperCase().slice(0,34);
     $("empty-msg").style.display="none";
     renderBin();renderTrim();renderCaps();
+    clearSceneMarks();
+    var sro=$("server-render-out");if(sro)sro.innerHTML="";
   }
   $("url-input").addEventListener("keydown",function(e){
     if(e.key==="Enter"){
@@ -581,6 +609,177 @@
     var proj={app:"Clip Studio / VI",source:state.srcName,duration:state.dur,in:state.inT,out:state.outT,cropXPercent:state.cropX,captions:state.captions,ffmpeg:ffmpegCmd()};
     download(new Blob([JSON.stringify(proj,null,2)],{type:"application/json"}),"clipstudio-project.json");
     toast("Project JSON diunduh");
+  });
+
+  /* ---------- server backend (alwantra.xyz/clipstudio-api) ---------- */
+  var CS_API="https://alwantra.xyz/clipstudio-api";
+  function csStoredKey(){return localStorage.getItem("cs_key")||""}
+  function csKey(){
+    var k=csStoredKey();
+    if(!k){k=prompt("Masukkan kode akses Clip Studio:");if(k)localStorage.setItem("cs_key",k)}
+    return k||"";
+  }
+  function setSrvStatus(txt){var el=$("srv-status");if(el)el.textContent=txt}
+  function hostOf(u){try{return new URL(u).hostname}catch(e){return "server"}}
+  function serverMediaUrl(sid){return CS_API+"/media/"+sid+"/source?k="+encodeURIComponent(csStoredKey())}
+  function apiPost(path,body){
+    return fetch(CS_API+path,{method:"POST",headers:{"X-CS-Key":csKey(),"Content-Type":"application/json"},body:JSON.stringify(body||{})})
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()});
+  }
+  function pollJob(jobId,onStep){
+    return new Promise(function(resolve,reject){
+      var fails=0;
+      var iv=setInterval(function(){
+        fetch(CS_API+"/api/job/"+jobId,{headers:{"X-CS-Key":csStoredKey()}})
+          .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+          .then(function(job){
+            fails=0;
+            if(job.step&&onStep)onStep(job.step);
+            if(job.state==="done"){clearInterval(iv);resolve(job)}
+            else if(job.state==="error"){clearInterval(iv);reject(new Error(job.error||"Job gagal di server"))}
+          })
+          .catch(function(e){fails++;if(fails>=5){clearInterval(iv);reject(new Error("Polling job gagal: "+e.message))}});
+      },3000);
+    });
+  }
+  function registerServerSource(sid,label){
+    var src={name:label,url:serverMediaUrl(sid),serverId:sid,server:true};
+    sources.push(src);
+    loadSource(src);
+    return src;
+  }
+  /* health check on load */
+  fetch(CS_API+"/api/health").then(function(r){return r.json()}).then(function(j){
+    setSrvStatus(j&&j.ok?"Backend: terhubung":"Backend: belum terhubung");
+  }).catch(function(){setSrvStatus("Backend: belum terhubung")});
+  $("btn-cs-key").addEventListener("click",function(){
+    var k=prompt("Masukkan kode akses Clip Studio:",csStoredKey());
+    if(k===null)return;
+    if(k)localStorage.setItem("cs_key",k);else localStorage.removeItem("cs_key");
+    toast(k?"Kode akses disimpan":"Kode akses dihapus");
+  });
+  $("btn-fetch-url").addEventListener("click",function(){
+    var u=$("srv-url").value.trim();
+    if(!u)return toast("Tempel URL video dulu");
+    var btn=this;btn.disabled=true;
+    setSrvStatus("Backend: menghubungi server…");
+    apiPost("/api/fetch",{url:u}).then(function(res){
+      setSrvStatus("Backend: mengambil video…");
+      return pollJob(res.jobId,function(step){setSrvStatus("Backend: "+step)});
+    }).then(function(job){
+      var sid=job.sourceId||job.id;
+      var res=job.result||{},meta=res.meta||res;
+      var label=meta.title||hostOf(u);
+      registerServerSource(sid,label);
+      setSrvStatus("Backend: terhubung · sumber server aktif");
+      toast("Video dari server dimuat: "+label);
+    }).catch(function(e){
+      setSrvStatus("Backend: terhubung");
+      toast("Gagal ambil URL: "+e.message);
+    }).then(function(){btn.disabled=false});
+  });
+  $("btn-upload-server").addEventListener("click",function(){
+    var cur=null;
+    sources.forEach(function(s){if(s.url===state.srcUrl)cur=s});
+    if(!cur||!cur.file)return toast("Pilih video lokal dari media bin dulu, lalu upload");
+    var btn=this;btn.disabled=true;
+    setSrvStatus("Backend: mengunggah file…");
+    var fd=new FormData();fd.append("file",cur.file);
+    fetch(CS_API+"/api/upload",{method:"POST",headers:{"X-CS-Key":csKey()},body:fd})
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()})
+      .then(function(res){
+        return pollJob(res.jobId,function(step){setSrvStatus("Backend: "+step)});
+      })
+      .then(function(job){
+        var sid=job.sourceId||job.id;
+        registerServerSource(sid,cur.name);
+        setSrvStatus("Backend: terhubung · sumber server aktif");
+        toast("Upload selesai — sumber server aktif");
+      }).catch(function(e){
+        setSrvStatus("Backend: terhubung");
+        toast("Upload gagal: "+e.message);
+      }).then(function(){btn.disabled=false});
+  });
+  /* transcribe (captions panel) */
+  $("btn-transcribe").addEventListener("click",function(){
+    if(!state.serverSourceId)return toast("Muat video dari server dulu (panel SERVER)");
+    var btn=this,old=btn.textContent;btn.disabled=true;btn.textContent="⏳ Transkrip berjalan…";
+    apiPost("/api/transcribe",{sourceId:state.serverSourceId}).then(function(res){
+      return pollJob(res.jobId,function(step){btn.textContent="⏳ "+step});
+    }).then(function(job){
+      var res=job.result||{},segs=res.segments||[];
+      state.captions=segs.map(function(s){return{t:s.start,text:s.text}});
+      state.captions.sort(function(a,b){return a.t-b.t});
+      renderCaps();
+      toast("Transkrip selesai (bahasa: "+(res.language||"?")+", "+segs.length+" segmen)");
+    }).catch(function(e){toast("Transkrip gagal: "+e.message)})
+      .then(function(){btn.disabled=false;btn.textContent=old});
+  });
+  /* scene detection (timeline panel) */
+  function clearSceneMarks(){
+    var lane=$("lane-source");
+    if(lane)lane.querySelectorAll(".scene-tick").forEach(function(n){n.remove()});
+    var list=$("scene-list");if(list)list.innerHTML="";
+    var info=$("scene-info");if(info)info.textContent="";
+  }
+  $("btn-scenes").addEventListener("click",function(){
+    if(!state.serverSourceId)return toast("Muat video dari server dulu (panel SERVER)");
+    var btn=this,old=btn.textContent;btn.disabled=true;btn.textContent="⏳ Deteksi berjalan…";
+    apiPost("/api/scenes",{sourceId:state.serverSourceId}).then(function(res){
+      return pollJob(res.jobId,function(step){btn.textContent="⏳ "+step});
+    }).then(function(job){
+      var res=job.result||{},scenes=res.scenes||[],silences=res.silences||[];
+      clearSceneMarks();
+      var lane=$("lane-source");
+      if(state.dur)scenes.forEach(function(sc){
+        var tick=document.createElement("div");tick.className="scene-tick";
+        tick.style.left=(sc.start/state.dur*100)+"%";tick.title="Scene @ "+fmt(sc.start);
+        lane.appendChild(tick);
+      });
+      var list=$("scene-list");
+      scenes.forEach(function(sc,i){
+        var b=document.createElement("button");b.className="btn scene-chip mono";
+        b.textContent="Scene "+(i+1)+" · "+fmt(sc.start)+"–"+fmt(sc.end);
+        b.addEventListener("click",function(){
+          state.inT=sc.start;state.outT=sc.end;renderTrim();
+          video.currentTime=sc.start;
+          toast("IN/OUT diset ke Scene "+(i+1));
+        });
+        list.appendChild(b);
+      });
+      $("scene-info").textContent=scenes.length+" scene · "+silences.length+" bagian hening terdeteksi";
+      toast("Deteksi selesai: "+scenes.length+" scene");
+    }).catch(function(e){toast("Deteksi scene gagal: "+e.message)})
+      .then(function(){btn.disabled=false;btn.textContent=old});
+  });
+  /* server render (export panel) */
+  function buildSrt(){
+    var out="";
+    state.captions.forEach(function(c,i){
+      var end=(i+1<state.captions.length)?state.captions[i+1].t:c.t+4;
+      out+=(i+1)+"\n"+srtTime(c.t)+" --> "+srtTime(end)+"\n"+c.text+"\n\n";
+    });
+    return out;
+  }
+  $("btn-render-server").addEventListener("click",function(){
+    if(!state.serverSourceId)return toast("Render server butuh video dari server (panel SERVER)");
+    if(state.inT===null||state.outT===null)return toast("Set IN dan OUT dulu");
+    var btn=this,old=btn.textContent;btn.disabled=true;btn.textContent="⏳ Merender di server…";
+    apiPost("/api/render",{sourceId:state.serverSourceId,"in":state.inT,out:state.outT,cropX:state.cropX,srt:buildSrt()}).then(function(res){
+      return pollJob(res.jobId,function(step){btn.textContent="⏳ "+step});
+    }).then(function(job){
+      var res=job.result||{};
+      if(!res.file)throw new Error("Hasil render tidak ada file");
+      var box=$("server-render-out");box.innerHTML="";
+      var a=document.createElement("a");
+      a.className="btn pink";a.style.display="block";a.style.textAlign="center";a.style.textDecoration="none";
+      a.href=CS_API+res.file+"?k="+encodeURIComponent(csStoredKey());
+      a.setAttribute("download","");
+      a.textContent="⬇ Unduh MP4 Hasil Render";
+      box.appendChild(a);
+      toast("Render selesai — klik tombol unduh MP4");
+    }).catch(function(e){toast("Render gagal: "+e.message)})
+      .then(function(){btn.disabled=false;btn.textContent=old});
   });
 
   /* waveform decoration (visual only) */
