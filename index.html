@@ -197,16 +197,17 @@
     <!-- RIGHT COLUMN -->
     <div class="col">
       <div class="panel" id="panel-server">
-        <div class="p-head mono"><span>SERVER / BACKEND</span><span class="r">CLIP.ALWANTRA.XYZ</span></div>
+        <div class="p-head mono"><span>SERVER / BACKEND</span><span class="r">ALWANTRA.XYZ</span></div>
         <div style="display:grid;gap:8px">
           <div class="mono" id="srv-status" style="font-size:12.5px;color:var(--mint)">Backend: memeriksa…</div>
-          <input type="text" id="srv-url" placeholder="Tempel URL YouTube / Twitch / MP4…">
+          <label for="srv-url" style="font-size:12.5px;color:var(--text)">Tempel link video di sini (YouTube / Twitch / file MP4):</label>
+          <input type="text" id="srv-url" placeholder="https://youtube.com/watch?v=…">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn pink" id="btn-fetch-url">Ambil dari URL (yt-dlp)</button>
+            <button class="btn pink" id="btn-fetch-url">⬇️ Ambil Video dari Link</button>
             <button class="btn" id="btn-upload-server">Upload File ke Server</button>
             <button class="btn" id="btn-cs-key">Kode Akses</button>
           </div>
-          <p style="color:var(--dim);font-size:12px;line-height:1.45">Video dari server membuka fitur Transkrip Otomatis, Deteksi Scene, dan Render MP4 Presisi. Video lokal tetap jalan seperti biasa.</p>
+          <p style="color:var(--dim);font-size:12px;line-height:1.45">Khusus YouTube: server kadang harus mencoba beberapa kali sebelum tembus (perlindungan bot dari YouTube). Kalau statusnya masih "mencoba", tunggu saja — server bekerja sendiri, jangan klik berulang-ulang. Video dari server membuka fitur Transkrip Otomatis, Deteksi Scene, dan Render MP4 Presisi. Video lokal tetap jalan seperti biasa.</p>
         </div>
       </div>
 
