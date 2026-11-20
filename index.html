@@ -3,139 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clip Studio — Stack Clipping &amp; Video Pipeline</title>
-<meta name="description" content="20 tool open-source untuk pipeline clipping video: capture, cari momen, transkrip, potong, render. Terpasang & terverifikasi 20 Nov 2026.">
+<title>CLIP STUDIO / VI — The Clipping Toolkit</title>
+<meta name="description" content="Clip Studio / VI — 20 GitHub repos jadi satu studio clipping: capture, cari momen, transkrip, potong, render. Terpasang & terverifikasi 20 Nov 2026.">
 <style>
   :root{
-    --bg:#0b0e14; --panel:#121724; --panel2:#171e2e; --line:#232c42;
-    --text:#e8ecf4; --muted:#93a0b8; --accent:#ff5c38; --accent2:#ffb03a;
-    --ok:#2fbf71; --warn:#f5b83d; --src:#7d8aa5;
+    --bg:#14081f; --bg2:#1a0b2a; --panel:#1e1033; --panel2:#251640; --line:#3b2260; --line2:#2c1849;
+    --text:#f4ecfb; --muted:#a68fc7; --dim:#7d68a3;
+    --pink:#ff4f9a; --pink2:#ff77b3; --mint:#4fe8c0; --teal:#39c6e0; --orange:#ffb03a; --violet:#9a6bff;
+    --ok:#2fbf71; --warn:#f5b83d; --src:#8b93a7;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.55}
-  a{color:var(--accent2);text-decoration:none}
-  a:hover{text-decoration:underline}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-  header{padding:64px 0 40px;text-align:center;background:radial-gradient(ellipse 70% 90% at 50% -10%,rgba(255,92,56,.18),transparent 60%)}
-  .badge{display:inline-block;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:4px 14px;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
-  h1{font-size:52px;letter-spacing:.02em;margin:18px 0 6px}
-  h1 .hl{color:var(--accent)}
-  .sub{color:var(--muted);font-size:18px;max-width:640px;margin:0 auto}
-  .stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:34px 0 6px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 22px;min-width:130px}
-  .stat b{display:block;font-size:30px;color:#fff}
-  .stat span{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
-  section{padding:38px 0 6px}
-  h2{font-size:24px;margin-bottom:6px}
-  .lead{color:var(--muted);margin-bottom:20px}
-  .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
-  .step .n{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:10px}
-  .step h3{font-size:16px;margin-bottom:4px}
-  .step p{color:var(--muted);font-size:13.5px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-  .card h3{font-size:16.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
-  .card .ver{color:var(--muted);font-size:13px;font-weight:400;white-space:nowrap}
-  .card p{color:var(--muted);font-size:14px;margin-top:5px}
-  .pill{font-size:11px;font-weight:700;letter-spacing:.05em;padding:2.5px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
-  .ok{background:rgba(47,191,113,.15);color:var(--ok)}
-  .warn{background:rgba(245,184,61,.15);color:var(--warn)}
-  .src{background:rgba(125,138,165,.18);color:var(--src)}
-  footer{margin-top:52px;border-top:1px solid var(--line);padding:26px 0 44px;color:var(--muted);font-size:14px;text-align:center}
-  @media(max-width:900px){.pipe{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}h1{font-size:40px}}
-  @media(max-width:560px){.pipe,.grid{grid-template-columns:1fr}}
+  body{background:radial-gradient(1200px 500px at 50% -80px,rgba(255,79,154,.14),transparent 60%),var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+  .mono{font-family:"Cascadia Code","JetBrains Mono",Consolas,"Courier New",monospace}
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+  /* ---------- header ---------- */
+  .topbar{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  .topbar .dot{color:var(--pink)}
+  .topbar .edit{color:var(--dim)}
+  .title-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin:14px 0 4px;flex-wrap:wrap}
+  h1{font-size:64px;font-weight:800;letter-spacing:.01em;line-height:.95}
+  h1 .vi{color:var(--pink);font-style:italic;margin-left:14px}
+  .shipit{text-align:right;color:var(--pink);font-weight:800;font-size:21px;line-height:1.15;letter-spacing:.04em}
+  .subline{color:var(--muted);letter-spacing:.22em;font-size:13px;text-transform:uppercase}
+  .subline b{color:var(--text)}
+  /* ---------- stage bar ---------- */
+  .stagebar{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;margin:20px 0 14px;font-size:12.5px}
+  .stagebar .stage{color:var(--mint);letter-spacing:.12em}
+  .stagebar .mid{color:var(--muted);letter-spacing:.08em}
+  .stagebar .tc{color:var(--muted)}
+  /* ---------- editor grid ---------- */
+  .editor{display:grid;grid-template-columns:1.9fr 1fr;gap:14px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;position:relative}
+  .panel .p-head{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+  .p-head .r{color:var(--dim)}
+  /* program monitor */
+  .screen{position:relative;border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#ffd9a0 0%,#ff9e7a 26%,#e86a9e 48%,#7a4fa3 72%,#2c1b4d 100%);aspect-ratio:16/8.4}
+  .screen::before{content:"";position:absolute;inset:0;background:
+    radial-gradient(ellipse 46% 26% at 24% 88%,rgba(20,60,50,.55),transparent 70%),
+    radial-gradient(ellipse 60% 30% at 78% 92%,rgba(16,44,40,.6),transparent 70%),
+    radial-gradient(circle 90px at 82% 20%,rgba(255,244,200,.85),transparent 70%)}
+  .screen .sea{position:absolute;left:0;right:0;bottom:0;height:26%;background:linear-gradient(180deg,rgba(64,180,190,.5),rgba(20,70,90,.75))}
+  .flock{position:absolute;color:rgba(30,16,44,.75);font-size:15px;letter-spacing:14px}
+  .crop{position:absolute;top:9%;bottom:13%;left:56%;width:23%;border:2px solid var(--mint);border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+  .crop::before,.crop::after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--mint)}
+  .crop::before{top:-2px;left:-2px;border-right:none;border-bottom:none}
+  .crop::after{bottom:-2px;right:-2px;border-left:none;border-top:none}
+  .crop .clabel{position:absolute;top:-24px;left:0;background:var(--mint);color:#0a2018;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:3px;white-space:nowrap}
+  .tag{position:absolute;background:var(--pink);color:#fff;font-size:10.5px;font-weight:700;padding:2.5px 8px;border-radius:3px;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+  .tag::before{content:"➤";position:absolute;left:-11px;top:-9px;color:var(--pink2);font-size:12px;transform:rotate(-38deg)}
+  .tag.mint{background:var(--mint);color:#0a2018}.tag.mint::before{color:var(--mint)}
+  .tag.orange{background:var(--orange);color:#2a1a00}.tag.orange::before{color:var(--orange)}
+  .tag.violet{background:var(--violet)}.tag.violet::before{color:var(--violet)}
+  .big-title{margin-top:12px;border:1.5px solid rgba(255,176,58,.65);border-radius:4px;padding:8px 10px;text-align:center;color:var(--pink);font-weight:800;font-size:27px;letter-spacing:.06em}
+  .transport{display:flex;align-items:center;gap:14px;margin-top:10px;font-size:13px;color:var(--muted)}
+  .transport .src-tag{color:var(--mint);font-size:11.5px}
+  .transport .tc-big{margin:0 auto;color:var(--text);font-size:19px;letter-spacing:.1em}
+  .pbar{height:3px;background:var(--line2);border-radius:2px;margin-top:8px}
+  .pbar i{display:block;height:100%;width:34%;background:var(--pink);border-radius:2px}
+  /* right column */
+  .col{display:grid;gap:14px;align-content:start}
+  .bin{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .thumb{border-radius:6px;aspect-ratio:16/10;position:relative;overflow:hidden}
+  .thumb small{position:absolute;left:5px;bottom:4px;font-size:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+  .t1{background:linear-gradient(160deg,#3a2b5e,#b03a6e 60%,#ff9e7a)}
+  .t2{background:linear-gradient(200deg,#7fd4e8,#2b7ea8 55%,#173a5e)}
+  .t3{background:linear-gradient(150deg,#ffd9a0,#e86a5e 55%,#5e2b4e)}
+  .slider-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);letter-spacing:.1em;margin:9px 0 4px}
+  .slider-row b{color:var(--pink2)}
+  .slider{height:4px;background:var(--line2);border-radius:2px;position:relative}
+  .slider i{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--orange);transform:translate(-50%,-50%)}
+  .curve{width:100%;height:74px}
+  .safe{display:inline-block;border:1px solid var(--mint);color:var(--mint);border-radius:4px;font-size:10.5px;padding:2px 8px;letter-spacing:.08em}
+  .out{display:flex;gap:12px;align-items:center}
+  .out-thumb{width:64px;aspect-ratio:9/16;border-radius:6px;background:linear-gradient(180deg,#ffd9a0,#e86a9e 55%,#2c1b4d);position:relative;flex:none}
+  .out-thumb small{position:absolute;left:0;right:0;bottom:4px;text-align:center;font-size:8.5px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+  .out h4{font-size:16px;letter-spacing:.05em}
+  .out p{color:var(--muted);font-size:12px}
+  .out .fmt{color:var(--mint);font-size:11.5px;letter-spacing:.1em}
+  .meter{display:flex;gap:2.5px;align-items:flex-end;height:26px;margin-top:8px}
+  .meter i{flex:1;background:var(--mint);border-radius:1px}
+  .meter i.hot{background:var(--orange)}
+  /* ---------- timeline ---------- */
+  .timeline{margin-top:14px}
+  .ruler{display:flex;justify-content:space-between;color:var(--dim);font-size:11px;margin:2px 0 8px 74px}
+  .track{display:grid;grid-template-columns:66px 1fr;gap:8px;align-items:center;margin-bottom:7px;position:relative}
+  .track label{font-size:10.5px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
+  .lane{height:30px;background:var(--panel2);border:1px solid var(--line2);border-radius:5px;position:relative;overflow:hidden}
+  .lane.thumbs{display:flex}
+  .lane.thumbs i{flex:1;border-right:1px solid rgba(0,0,0,.35)}
+  .cap{position:absolute;top:4px;height:22px;border-radius:4px;background:#472a6e;border:1px solid var(--violet);color:#e9ddff;font-size:10.5px;display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden}
+  .wave{position:absolute;inset:0;display:flex;align-items:center;gap:1.5px;padding:0 3px}
+  .wave i{flex:1;background:rgba(79,232,192,.75);border-radius:1px;min-height:2px}
+  .playhead{position:absolute;top:26px;bottom:8px;left:calc(74px + (100% - 74px)*.13);width:2px;background:var(--pink);z-index:3}
+  .playhead::before{content:"";position:absolute;top:-7px;left:-5px;border:6px solid transparent;border-top:8px solid var(--pink)}
+  /* ---------- toolkit ---------- */
+  .toolkit{margin-top:16px}
+  .toolkit .p-head{margin-bottom:4px}
+  .tools{display:grid;grid-template-columns:repeat(5,1fr);gap:4px 26px;padding:8px 4px 4px}
+  .tool{display:flex;gap:9px;align-items:baseline;padding:7px 0 9px;border-bottom:3px solid var(--line2);font-size:14.5px}
+  .tool .num{color:var(--dim);font-size:11.5px}
+  .tool .st{margin-left:auto;width:8px;height:8px;border-radius:50%;flex:none;align-self:center}
+  .st.ok{background:var(--ok)}.st.warn{background:var(--warn)}.st.src{background:var(--src)}
+  .c-pink{border-color:var(--pink)} .c-mint{border-color:var(--mint)} .c-orange{border-color:var(--orange)} .c-violet{border-color:var(--violet)} .c-teal{border-color:var(--teal)}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:12px}
+  .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+  footer{margin-top:30px;border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+  footer a{color:var(--pink2)}
+  @media(max-width:920px){.editor{grid-template-columns:1fr}.tools{grid-template-columns:repeat(2,1fr)}h1{font-size:44px}.big-title{font-size:20px}}
+  @media(max-width:520px){.tools{grid-template-columns:1fr}.shipit{display:none}}
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap">
-    <span class="badge">Open-source video stack</span>
-    <h1>CLIP <span class="hl">STUDIO</span></h1>
-    <p class="sub">20 tool untuk pipeline clipping video — dari capture livestream &amp; VOD, cari momen otomatis, transkrip kata-per-kata, sampai potong &amp; render. Terpasang dan terverifikasi satu-satu.</p>
-    <div class="stats">
-      <div class="stat"><b>20</b><span>Tool</span></div>
-      <div class="stat"><b>17</b><span>Siap Pakai</span></div>
-      <div class="stat"><b>1</b><span>Parsial</span></div>
-      <div class="stat"><b>2</b><span>Source Only</span></div>
+<div class="wrap">
+
+  <div class="topbar mono">
+    <span><span class="dot">●</span>&nbsp; PROJECT / GTA_VI_CLIPS</span>
+    <span class="edit">EDIT PREVIEW</span>
+  </div>
+
+  <div class="title-row">
+    <h1>CLIP STUDIO <span class="vi">/ VI</span></h1>
+    <div class="shipit">CLIP IT.<br>SHIP IT.</div>
+  </div>
+  <p class="subline mono">OPUS STACK &nbsp;×&nbsp; <b>20 GITHUB REPOS</b> &nbsp;—&nbsp; 17 SIAP PAKAI · 1 PARSIAL · 2 SOURCE-ONLY</p>
+
+  <div class="stagebar mono">
+    <span><span class="stage">01 / CAPTURE</span> &nbsp;&nbsp; DROP / Bring the source in</span>
+    <span class="tc">03.40 / 30.00</span>
+  </div>
+
+  <div class="editor">
+    <!-- PROGRAM MONITOR -->
+    <div class="panel">
+      <div class="p-head mono"><span>● PROGRAM / SOURCE_01</span><span class="r">ORIGINAL SPEED</span></div>
+      <div class="screen">
+        <div class="flock" style="top:16%;left:8%">⌒ ⌒ ⌒ ⌒</div>
+        <div class="flock" style="top:26%;left:38%">⌒ ⌒ ⌒</div>
+        <div class="sea"></div>
+        <div class="crop"><span class="clabel mono">9:16 / CROP 01</span></div>
+        <span class="tag mint" style="top:12%;right:6%">14 Reframe</span>
+        <span class="tag" style="bottom:34%;left:47%">02 Select</span>
+      </div>
+      <div class="big-title">TRAILER MASUK, SHORTS KELUAR</div>
+      <div class="transport mono">
+        <span class="src-tag">yt-dlp + OBS Studio</span>
+        <span>⏸ ▶</span>
+        <span class="tc-big">00:03:24</span>
+        <span>SOURCE 18–48 SEC</span>
+      </div>
+      <div class="pbar"><i></i></div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col">
+      <div class="panel">
+        <div class="p-head mono"><span>MEDIA BIN / SOURCE MOMENTS</span><span class="r">KEYFRAMES</span></div>
+        <div class="bin">
+          <div class="thumb t1"><small class="mono">07:00</small></div>
+          <div class="thumb t2"><small class="mono">19:00</small></div>
+          <div class="thumb t3"><small class="mono">27:00</small></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="p-head mono"><span>INSPECTOR / REFRAME</span><span class="r">KEYFRAMES</span></div>
+        <div style="font-weight:800;letter-spacing:.03em;font-size:17px">VICE CITY, <span style="color:var(--pink)">CROP</span> VERTIKAL</div>
+        <div class="slider-row mono"><span>MOTION CROP — X</span><b>55.0%</b></div>
+        <div class="slider"><i style="left:55%"></i></div>
+        <div style="margin:10px 0 2px"><span class="safe mono">9:16 / SAFE AREA</span></div>
+        <svg class="curve" viewBox="0 0 300 74" preserveAspectRatio="none">
+          <path d="M4,66 C90,60 130,10 296,14" fill="none" stroke="#9a6bff" stroke-width="2"/>
+          <circle cx="60" cy="58" r="4" fill="#1e1033" stroke="#ff77b3" stroke-width="2"/>
+          <circle cx="170" cy="26" r="4" fill="#1e1033" stroke="#9a6bff" stroke-width="2"/>
+          <circle cx="286" cy="14" r="4" fill="#1e1033" stroke="#ffb03a" stroke-width="2"/>
+        </svg>
+        <div class="slider-row mono"><span>EASING / MOTION</span><span>RGB <b style="color:var(--orange)">+0.4</b></span></div>
+        <span class="tag violet" style="top:118px;right:52px">10 Motion</span>
+        <span class="tag orange" style="bottom:12px;right:16px">20 Color</span>
+      </div>
+
+      <div class="panel">
+        <div class="p-head mono"><span>9:16 / OUTPUT PREVIEW</span><span class="r">EXPORT / H.264</span></div>
+        <div class="out">
+          <div class="out-thumb"><small class="mono">VICE CITY</small></div>
+          <div>
+            <h4 class="mono">SHORT_01</h4>
+            <p>9:16 / H.264</p>
+            <p class="fmt mono">VIDEO + CAPTIONS</p>
+            <div class="meter" id="meter"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</header>
 
-<div class="wrap">
-  <section>
-    <h2>Pipeline Produksi</h2>
-    <p class="lead">Alur lengkap dari bahan mentah sampai klip jadi — tiap tahap sudah ada tool-nya.</p>
-    <div class="pipe">
-      <div class="step"><div class="n">1</div><h3>Capture</h3><p>Unduh VOD &amp; livestream dari YouTube, Twitch, dan 1.000+ situs lain.</p></div>
-      <div class="step"><div class="n">2</div><h3>Cari Momen</h3><p>Deteksi pergantian scene, jeda hening, dan momen paling layak klip secara otomatis.</p></div>
-      <div class="step"><div class="n">3</div><h3>Transkrip</h3><p>Speech-to-text cepat dengan timestamp per kata — bahan subtitle yang akurat.</p></div>
-      <div class="step"><div class="n">4</div><h3>Potong &amp; Edit</h3><p>Potong lossless, buang bagian hening, edit timeline di browser atau GUI.</p></div>
-      <div class="step"><div class="n">5</div><h3>Render</h3><p>Komposisi video programatik &amp; encoding final untuk Shorts / Reels / TikTok.</p></div>
-    </div>
-  </section>
+  <!-- TIMELINE -->
+  <div class="panel timeline">
+    <div class="p-head mono"><span>SEQUENCE / SHORT_01</span><span class="r" style="color:var(--pink2)">SNAP • 30.00 SEC</span></div>
+    <div class="playhead"></div>
+    <div class="ruler mono"><span>00</span><span>05</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span></div>
+    <div class="track"><label class="mono">Source</label><div class="lane thumbs" id="thumbs"></div></div>
+    <div class="track"><label class="mono">Captions</label><div class="lane">
+      <span class="cap" style="left:2%;width:17%">CLIP IT.</span>
+      <span class="cap" style="left:21%;width:19%">KEEP THE CHAOS.</span>
+      <span class="cap" style="left:42%;width:20%">ONLY IN LEONIDA.</span>
+      <span class="cap" style="left:64%;width:16%">RUN IT BACK.</span>
+      <span class="cap" style="left:82%;width:16%;background:#6e2147;border-color:var(--pink)">VICE CITY</span>
+    </div></div>
+    <div class="track"><label class="mono">Reframe</label><div class="lane">
+      <svg width="100%" height="30" viewBox="0 0 600 30" preserveAspectRatio="none"><path d="M0,22 L120,20 L240,9 L360,14 L480,6 L600,11" fill="none" stroke="#4fe8c0" stroke-width="1.6"/></svg>
+    </div></div>
+    <div class="track"><label class="mono">Audio</label><div class="lane"><div class="wave" id="wave"></div></div></div>
+    <span class="tag orange" style="left:150px;bottom:64px">11 Captions</span>
+    <span class="tag mint" style="left:44%;bottom:6px">17 Audio</span>
+    <span class="tag" style="right:120px;top:64px">16 Trim</span>
+  </div>
 
-  <section>
-    <h2>Capture</h2>
-    <p class="lead">Mengambil bahan dari platform streaming.</p>
-    <div class="grid">
-      <div class="card"><h3>yt-dlp <span class="pill ok">Siap</span></h3><p><span class="ver">2026.10.26</span> — Downloader video dari YouTube &amp; 1.000+ situs.</p></div>
-      <div class="card"><h3>streamlink <span class="pill ok">Siap</span></h3><p><span class="ver">8.6.3</span> — Pipe livestream ke player / file rekaman.</p></div>
-      <div class="card"><h3>TwitchDownloaderCLI <span class="pill ok">Siap</span></h3><p><span class="ver">1.56.5</span> — Unduh VOD, klip &amp; chat Twitch, render chat jadi overlay.</p></div>
+  <!-- TOOLKIT -->
+  <div class="panel toolkit">
+    <div class="p-head mono"><span>THE CLIPPING TOOLKIT / 20 REPOS</span><span class="r">TERPASANG 20 NOV 2026</span></div>
+    <div class="tools">
+      <div class="tool c-pink"><span class="num mono">01</span>Remotion Skills<span class="st ok"></span></div>
+      <div class="tool c-mint"><span class="num mono">02</span>ClipsAI<span class="st ok"></span></div>
+      <div class="tool c-teal"><span class="num mono">03</span>FunClip<span class="st ok"></span></div>
+      <div class="tool c-orange"><span class="num mono">04</span>yt-dlp<span class="st ok"></span></div>
+      <div class="tool c-violet"><span class="num mono">05</span>TwitchDownloader<span class="st ok"></span></div>
+      <div class="tool c-teal"><span class="num mono">06</span>Streamlink<span class="st ok"></span></div>
+      <div class="tool c-pink"><span class="num mono">07</span>OBS Studio<span class="st src"></span></div>
+      <div class="tool c-mint"><span class="num mono">08</span>PySceneDetect<span class="st ok"></span></div>
+      <div class="tool c-orange"><span class="num mono">09</span>Auto-Editor<span class="st ok"></span></div>
+      <div class="tool c-violet"><span class="num mono">10</span>faster-whisper<span class="st ok"></span></div>
+      <div class="tool c-pink"><span class="num mono">11</span>WhisperX<span class="st ok"></span></div>
+      <div class="tool c-teal"><span class="num mono">12</span>Silero VAD<span class="st ok"></span></div>
+      <div class="tool c-mint"><span class="num mono">13</span>MediaPipe<span class="st ok"></span></div>
+      <div class="tool c-orange"><span class="num mono">14</span>OpenCV<span class="st ok"></span></div>
+      <div class="tool c-violet"><span class="num mono">15</span>Subtitle Edit<span class="st src"></span></div>
+      <div class="tool c-teal"><span class="num mono">16</span>LosslessCut<span class="st ok"></span></div>
+      <div class="tool c-pink"><span class="num mono">17</span>MoviePy<span class="st ok"></span></div>
+      <div class="tool c-mint"><span class="num mono">18</span>OpenCut<span class="st warn"></span></div>
+      <div class="tool c-orange"><span class="num mono">19</span>Remotion<span class="st ok"></span></div>
+      <div class="tool c-violet"><span class="num mono">20</span>FFmpeg<span class="st ok"></span></div>
     </div>
-  </section>
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>Siap pakai (17)</span>
+      <span><i style="background:var(--warn)"></i>Parsial — OpenCut: render halaman tersangkut fetch font di jaringan VM (1)</span>
+      <span><i style="background:var(--src)"></i>Source-only — OBS &amp; Subtitle Edit, aplikasi desktop (2)</span>
+    </div>
+  </div>
 
-  <section>
-    <h2>Analisis &amp; Cari Momen</h2>
-    <p class="lead">Menemukan bagian yang layak jadi klip tanpa menonton ulang berjam-jam.</p>
-    <div class="grid">
-      <div class="card"><h3>PySceneDetect <span class="pill ok">Siap</span></h3><p><span class="ver">0.7.3</span> — Deteksi batas scene &amp; potong video per adegan.</p></div>
-      <div class="card"><h3>Silero VAD <span class="pill ok">Siap</span></h3><p>Voice activity detection — petakan bagian bicara vs hening.</p></div>
-      <div class="card"><h3>ClipsAI <span class="pill ok">Siap</span></h3><p>AI pencari momen klip dari video panjang + auto-reframe.</p></div>
-      <div class="card"><h3>FunClip <span class="pill ok">Siap</span></h3><p>Clipping berbasis teks dari ModelScope — pilih momen dari transkrip.</p></div>
-      <div class="card"><h3>OpenCV <span class="pill ok">Siap</span></h3><p><span class="ver">5.1.0</span> — Pemrosesan frame &amp; computer vision serbaguna.</p></div>
-      <div class="card"><h3>MediaPipe <span class="pill ok">Siap</span></h3><p><span class="ver">1.2.3</span> — Deteksi wajah / pose untuk framing subjek.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Transkrip &amp; Subtitle</h2>
-    <p class="lead">Suara jadi teks dengan timing presisi.</p>
-    <div class="grid">
-      <div class="card"><h3>faster-whisper <span class="pill ok">Siap</span></h3><p><span class="ver">1.2.1</span> — Whisper versi cepat (CTranslate2) untuk transkrip massal.</p></div>
-      <div class="card"><h3>WhisperX <span class="pill ok">Siap</span></h3><p>Timestamp per kata + diarization — siapa bicara, kapan persisnya.</p></div>
-      <div class="card"><h3>Subtitle Edit <span class="pill src">Source</span></h3><p>Editor subtitle legendaris — source tersedia, GUI-nya aplikasi desktop Windows/.NET.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Potong &amp; Edit</h2>
-    <p class="lead">Dari rough cut sampai timeline final.</p>
-    <div class="grid">
-      <div class="card"><h3>auto-editor <span class="pill ok">Siap</span></h3><p><span class="ver">29.3.1</span> — Buang bagian hening otomatis, video langsung padat.</p></div>
-      <div class="card"><h3>LosslessCut <span class="pill ok">Siap</span></h3><p><span class="ver">3.70.2</span> — Potong &amp; gabung video tanpa re-encode, hasil instan.</p></div>
-      <div class="card"><h3>MoviePy <span class="pill ok">Siap</span></h3><p><span class="ver">2.1.2</span> — Editing video programatik dari Python.</p></div>
-      <div class="card"><h3>OpenCut Classic <span class="pill warn">Parsial</span></h3><p>Editor timeline di browser — dependensi beres, render halaman tersangkut fetch font di jaringan terbatas.</p></div>
-      <div class="card"><h3>OBS Studio <span class="pill src">Source</span></h3><p>Standar rekam &amp; livestream — source tersedia, binary-nya untuk mesin desktop/GPU.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Render &amp; Mesin</h2>
-    <p class="lead">Komposisi final dan fondasi stack-nya.</p>
-    <div class="grid">
-      <div class="card"><h3>Remotion <span class="pill ok">Siap</span></h3><p><span class="ver">4.0.543</span> — Video dari kode React: template klip, lower-third, outro.</p></div>
-      <div class="card"><h3>Remotion Skills <span class="pill ok">Siap</span></h3><p>Kumpulan skill siap pakai untuk workflow Remotion.</p></div>
-      <div class="card"><h3>FFmpeg <span class="pill ok">Siap</span></h3><p><span class="ver">8.1.2</span> — Mesin encode/decode di balik hampir semua tool di atas.</p></div>
-    </div>
-  </section>
+  <footer>
+    <span>Pipeline: capture → cari momen → transkrip per kata → potong → render 9:16. Model ML (Whisper dkk.) diunduh saat pertama dipakai.</span>
+    <span>Kode &amp; status: <a href="https://github.com/kanjeng4194/clip-studio">github.com/kanjeng4194/clip-studio</a></span>
+  </footer>
 </div>
 
-<footer>
-  <div class="wrap">
-    Clip Studio — terpasang &amp; terverifikasi 20 November 2026 · Python 3.12 · Node 24 · FFmpeg 8.1.2<br>
-    Kode &amp; status lengkap: <a href="https://github.com/kanjeng4194/clip-studio">github.com/kanjeng4194/clip-studio</a>
-  </div>
-</footer>
+<script>
+  // source thumbnail strip
+  var thumbs=document.getElementById('thumbs'), hues=[265,315,200,20,280,330,190,300,25,260,210,320];
+  for(var i=0;i<hues.length;i++){var t=document.createElement('i');t.style.background='linear-gradient(160deg,hsl('+hues[i]+',55%,42%),hsl('+(hues[i]+40)+',60%,26%))';thumbs.appendChild(t);}
+  // audio waveform
+  var wave=document.getElementById('wave');
+  for(var j=0;j<90;j++){var b=document.createElement('i');b.style.height=(18+Math.abs(Math.sin(j*.55))*46+((j*37)%23))+'%';wave.appendChild(b);}
+  // output meter
+  var meter=document.getElementById('meter');
+  for(var k=0;k<16;k++){var m=document.createElement('i');m.style.height=(30+((k*53)%70))+'%';if(k>12)m.className='hot';meter.appendChild(m);}
+</script>
 </body>
 </html>
